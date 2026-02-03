@@ -1,5 +1,7 @@
 # nhk-news-op
 
+[Japanese](README_ja.md)
+
 A small web demo that recreates the opening vibe of NHK News.  
 This project is a fan-made parody for fun and experimentation and is not affiliated with or endorsed by NHK.
 
