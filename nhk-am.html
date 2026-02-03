@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>NHK Style - Depth & Shadow</title>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        #renderCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            outline: none;
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-box {
+            width: 320px;
+            height: 320px;
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            background-color: rgba(255, 255, 255, 0.2);
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+
+            /* パネルの浮遊感を強調する多重シャドウ */
+            box-shadow: 
+                0px 30px 60px -12px rgba(0, 10, 40, 0.5),
+                0px 18px 36px -18px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .text-am {
+            font-weight: 900;
+            font-size: 110px;
+            line-height: 0.9;
+            color: #002266;
+            margin-top: 15px;
+            letter-spacing: -2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .text-linux {
+            font-weight: 400;
+            font-size: 60px;
+            color: #002266;
+            margin-top: -5px;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <div class="ui-layer">
+        <div class="logo-box">
+            <div class="text-am">NHK</div>
+            <div class="text-linux">NEWS</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("renderCanvas");
+        const engine = new BABYLON.Engine(canvas, true);
+
+        const createScene = function () {
+            const scene = new BABYLON.Scene(engine);
+            scene.clearColor = new BABYLON.Color3(0.98, 0.98, 0.98);
+
+            // カメラ設定
+            const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 20, BABYLON.Vector3.Zero(), scene);
+            camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+            const viewSize = 12; 
+            const aspect = canvas.width / canvas.height;
+            camera.orthoTop = viewSize;
+            camera.orthoBottom = -viewSize;
+            camera.orthoLeft = -viewSize * aspect;
+            camera.orthoRight = viewSize * aspect;
+            
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            light.intensity = 1.0;
+
+            // 背景パネル
+            const backgroundPlane = BABYLON.MeshBuilder.CreatePlane("background", {size: 100}, scene);
+            backgroundPlane.rotation.x = Math.PI / 4; 
+
+            // テクスチャ生成
+            const bgTexture = new BABYLON.DynamicTexture("dynamic texture", {width:2048, height:2048}, scene);
+            const ctx = bgTexture.getContext();
+            
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, 2048, 2048);
+
+            ctx.translate(1024, 1024);
+            ctx.rotate(Math.PI / 9); 
+            ctx.translate(-1024, -1024);
+
+            const colors = ["#0055AA", "#2A7FD6", "#FFFFFF", "#B0C4DE", "#194793", "#003388"];
+            let currentX = -1500; 
+            let lastColorIndex = -1;
+
+            while(currentX < 3500) {
+                const width = Math.random() * 120 + 40;
+                
+                let colorIndex;
+                do {
+                    colorIndex = Math.floor(Math.random() * colors.length);
+                } while (colorIndex === lastColorIndex);
+                
+                lastColorIndex = colorIndex;
+                const color = colors[colorIndex];
+                
+                // ストライプ本体
+                ctx.fillStyle = color;
+                ctx.fillRect(currentX, -1000, width, 4500);
+
+                // 【追加】ストライプの境界に立体感を出すためのシャドウ
+                const shadowWidth = 15;
+                const gradient = ctx.createLinearGradient(currentX, 0, currentX + shadowWidth, 0);
+                gradient.addColorStop(0, "rgba(0, 10, 40, 0.15)");
+                gradient.addColorStop(1, "rgba(0, 10, 40, 0)");
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(currentX, -1000, shadowWidth, 4500);
+
+                currentX += width;
+            }
+            bgTexture.update();
+            
+            const bgMaterial = new BABYLON.StandardMaterial("bgMat", scene);
+            bgMaterial.diffuseTexture = bgTexture;
+            bgMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+            bgMaterial.emissiveColor = new BABYLON.Color3(0.85, 0.85, 0.85); // 少し明るめに調整
+            backgroundPlane.material = bgMaterial;
+
+            scene.onBeforeRenderObservable.add(() => {
+                const aspect = canvas.width / canvas.height;
+                camera.orthoLeft = -viewSize * aspect;
+                camera.orthoRight = viewSize * aspect;
+            });
+
+            return scene;
+        };
+
+        const scene = createScene();
+
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+</html>
