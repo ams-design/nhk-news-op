@@ -6,7 +6,7 @@
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@900&display=swap" rel="stylesheet">
     <style>
         body, html {
             margin: 0;
@@ -51,7 +51,6 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-family: 'Roboto', sans-serif;
 
             /* パネルの浮遊感を強調する多重シャドウ */
             box-shadow: 
@@ -61,7 +60,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .text-am {
+        .text-1 {
             font-weight: 900;
             font-size: 110px;
             line-height: 0.9;
@@ -69,14 +68,16 @@
             margin-top: 15px;
             letter-spacing: -2px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-family: 'Zen Maru Gothic', sans-serif;
         }
 
-        .text-linux {
+        .text-2 {
             font-weight: 400;
             font-size: 60px;
             color: #002266;
             margin-top: -5px;
             letter-spacing: 2px;
+            font-family: sans-serif;
         }
     </style>
 </head>
@@ -84,8 +85,8 @@
     <canvas id="renderCanvas"></canvas>
     <div class="ui-layer">
         <div class="logo-box">
-            <div class="text-am">NHK</div>
-            <div class="text-linux">NEWS</div>
+            <div class="text-1"><em>NHK</em></div>
+            <div class="text-2">NEWS</div>
         </div>
     </div>
 
